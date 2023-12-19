@@ -13,6 +13,7 @@ import re
 from precio_producto_zalando import PrecioProductoZalando
 from producto_zalando import ProductoZalando
 from selenium.common.exceptions import NoSuchElementException
+import chromedriver_autoinstaller
 
 VECTOR_MARCAS_SELECCIONADAS = ["adidas","nike","converse","new-balance","puma","vans"]
 #VECTOR_MARCAS_SELECCIONADAS = ["nike","adidas"]
@@ -52,6 +53,7 @@ class ZalandoDataScraper:
     
     def initDriver(self, url_destino):
         try:
+            chromedriver_autoinstaller.install()
             chrome_options = webdriver.ChromeOptions()
             #chrome_options.add_argument('--headless')
             chrome_options.add_argument('--no-sandbox')
@@ -62,7 +64,7 @@ class ZalandoDataScraper:
             #s = Service(chromedriver_path)
             #s=Service(ChromeDriverManager().install())
             #self.driver = webdriver.Chrome(service=s, options=chrome_options)
-            self.driver = webdriver.Chrome('chromedriver',chrome_options=chrome_options)
+            self.driver = webdriver.Chrome(options=chrome_options)
             time.sleep(2)
             self.driver.get(url_destino)
             time.sleep(2)
