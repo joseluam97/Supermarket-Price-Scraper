@@ -58,8 +58,8 @@ class ZalandoDataScraper:
             chrome_options.add_argument('--disable-dev-shm-usage')
             chrome_options.add_argument('--log-level=3')
             chrome_options.add_argument(self.configuracion['idioma'])
-            chromedriver_path = r"C:\Users\josel\.cache\selenium\chromedriver\win64\119.0.6045.105\chromedriver.exe"
-            s = Service(chromedriver_path)
+            #chromedriver_path = r"C:\Users\josel\.cache\selenium\chromedriver\win64\119.0.6045.105\chromedriver.exe"
+            #s = Service(chromedriver_path)
             #s=Service(ChromeDriverManager().install())
             self.driver = webdriver.Chrome(service=s, options=chrome_options)
             time.sleep(2)
