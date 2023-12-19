@@ -13,9 +13,6 @@ import re
 from precio_producto_zalando import PrecioProductoZalando
 from producto_zalando import ProductoZalando
 from selenium.common.exceptions import NoSuchElementException
-import chromedriver_autoinstaller
-
-from selenium.webdriver.chrome.service import Service as ChromeService
 
 VECTOR_MARCAS_SELECCIONADAS = ["adidas","nike","converse","new-balance","puma","vans"]
 #VECTOR_MARCAS_SELECCIONADAS = ["nike","adidas"]
@@ -55,19 +52,16 @@ class ZalandoDataScraper:
     
     def initDriver(self, url_destino):
         try:
-            chrome_path = "/usr/bin/chromium-browser"
             chrome_options = webdriver.ChromeOptions()
-            chrome_options.add_argument('--headless')
+            #chrome_options.add_argument('--headless')
             chrome_options.add_argument('--no-sandbox')
             chrome_options.add_argument('--disable-dev-shm-usage')
             chrome_options.add_argument('--log-level=3')
             chrome_options.add_argument(self.configuracion['idioma'])
             #chromedriver_path = r"C:\Users\josel\.cache\selenium\chromedriver\win64\119.0.6045.105\chromedriver.exe"
             #s = Service(chromedriver_path)
-            #s=Service(ChromeDriverManager().install())
-            #self.driver = webdriver.Chrome(service=s, options=chrome_options)
-            # Crear una instancia del controlador
-            self.driver = webdriver.Chrome(executable_path=chrome_path, options=chrome_options, service=ChromeService(chrome_path))
+            s=Service(ChromeDriverManager().install())
+            self.driver = webdriver.Chrome(service=s, options=chrome_options)
             time.sleep(2)
             self.driver.get(url_destino)
             time.sleep(2)
