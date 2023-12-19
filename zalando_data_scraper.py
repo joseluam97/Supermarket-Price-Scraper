@@ -61,7 +61,8 @@ class ZalandoDataScraper:
             #chromedriver_path = r"C:\Users\josel\.cache\selenium\chromedriver\win64\119.0.6045.105\chromedriver.exe"
             #s = Service(chromedriver_path)
             #s=Service(ChromeDriverManager().install())
-            self.driver = webdriver.Chrome(service=s, options=chrome_options)
+            #self.driver = webdriver.Chrome(service=s, options=chrome_options)
+            self.driver = webdriver.Chrome('chromedriver',chrome_options=chrome_options)
             time.sleep(2)
             self.driver.get(url_destino)
             time.sleep(2)
