@@ -66,7 +66,7 @@ def openZalando(pagina_inicio, pagina_final, url_zalando, outputFolder, hilo):
                 lista_productos.append(producto_zalando)
 
         #Publicar en BD
-        #post_data_in_database(lista_productos)
+        post_data_in_database(lista_productos)
 
         #Export Excel
         now = datetime.now()
