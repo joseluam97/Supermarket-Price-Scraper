@@ -14,41 +14,14 @@ from precio_producto_zalando import PrecioProductoZalando
 from producto_zalando import ProductoZalando
 from selenium.common.exceptions import NoSuchElementException
 
-VECTOR_MARCAS_SELECCIONADAS = ["adidas","nike","converse","new-balance","puma","vans"]
-#VECTOR_MARCAS_SELECCIONADAS = ["nike","adidas"]
+VECTOR_MARCAS_SELECCIONADAS = ["adidas","nike","converse-online-shop","new-balance","puma","vans"]
+VECTOR_FILTERS_URL = ["adidas","nike","converse","new-balance","puma","vans"]
 
 class ZalandoDataScraper:
 
-    def __init__(self, idioma, imgOutput):
+    def __init__(self):
         self.driver = None
         self.errorCont = 0
-        self.imgOutput = imgOutput
-        self.configuracion = self.setConfiguracion(idioma)
-    
-    def setConfiguracion(self, idioma):
-        conf = {
-            'idioma': '--lang=es-ES',
-            'textoEstrellas': 'estrellas',
-            'textoReviews': 'reseñas',
-            'textoDireccion': 'Dirección: ',
-            'textoWeb': 'Sitio web: ',
-            'textoTelefono': 'Teléfono: ',
-            'textoPlusCode': 'Plus Code: ',
-            'textoHorario': 'Ocultar el horario de la semana',
-            'remplazarHorario': [' Ocultar el horario de la semana', 'El horario podría cambiar', '; ']
-        }
-        if(idioma == 'EN'):
-            conf['idioma'] = '--lang=en-GB'
-            conf['textoEstrellas'] = 'stars'
-            conf['textoReviews'] = 'reviews'
-            conf['textoDireccion'] = 'Address: '
-            conf['textoWeb'] = 'Website: '
-            conf['textoTelefono'] = 'Phone: '
-            conf['textoPlusCode'] = 'Plus code: '
-            conf['textoHorario'] = 'Hide open hours for the week'
-            conf['remplazarHorario'] = ['. Hide open hours for the week', 'Hours might differ', '; ']
-        
-        return conf
     
     def initDriver(self, url_destino):
         try:
@@ -57,10 +30,10 @@ class ZalandoDataScraper:
             chrome_options.add_argument('--no-sandbox')
             chrome_options.add_argument('--disable-dev-shm-usage')
             chrome_options.add_argument('--log-level=3')
-            chrome_options.add_argument(self.configuracion['idioma'])
-            #chromedriver_path = r"C:\Users\josel\.cache\selenium\chromedriver\win64\119.0.6045.105\chromedriver.exe"
-            #s = Service(chromedriver_path)
-            s=Service(ChromeDriverManager().install())
+            chrome_options.add_argument('--lang=es-ES')
+            chromedriver_path = r"C:\Users\josel\.cache\selenium\chromedriver\win64\119.0.6045.105\chromedriver.exe"
+            s = Service(chromedriver_path)
+            #s=Service(ChromeDriverManager().install())
             self.driver = webdriver.Chrome(service=s, options=chrome_options)
             time.sleep(2)
             self.driver.get(url_destino)
@@ -93,9 +66,6 @@ class ZalandoDataScraper:
 
     def scrapearProductoZalando(self, url_destino):
         try:
-            
-            print("--------url_destino----------")
-            print(url_destino)
             self.driver.get(url_destino)
             time.sleep(2)
             selector_talla = WebDriverWait(self.driver, 20).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="picker-trigger"]')))
@@ -133,9 +103,13 @@ class ZalandoDataScraper:
             except:
                 modelo = contenido_producto.find_element(By.XPATH, ".//h1[contains(@class, 'sDq_FX ')]//span[contains(@class, 'EKabf7 ')]").text
 
-            color = contenido_producto.find_element(By.XPATH, ".//p[contains(@class, 'sDq_FX _2kjxJ6 FxZV-M HlZ_Tf')]//span[contains(@class, 'sDq_FX lystZ1 dgII7d HlZ_Tf zN9KaA')]").text
-            imagen_value = contenido_producto.find_element(By.XPATH, ".//div[contains(@class, 'KVKCn3')]//img[contains(@class, 'sDq_FX')]").get_attribute('src')
-            price = contenido_producto.find_element(By.XPATH, ".//p[contains(@class, '_0xLoFW')]//span[contains(@class, 'sDq_FX')]").text
+            try:
+                color = contenido_producto.find_element(By.XPATH, ".//p[contains(@class, 'sDq_FX _2kjxJ6 FxZV-M HlZ_Tf')]//span[contains(@class, 'sDq_FX lystZ1 dgII7d HlZ_Tf zN9KaA')]").text
+                imagen_value = contenido_producto.find_element(By.XPATH, ".//div[contains(@class, 'KVKCn3')]//img[contains(@class, 'sDq_FX')]").get_attribute('src')
+                price = contenido_producto.find_element(By.XPATH, ".//p[contains(@class, '_0xLoFW')]//span[contains(@class, 'sDq_FX')]").text
+            except:
+                print("ERROR - Fallo en la obtencion de color, imagen o precio inicial")
+                return None
 
             #Gestion de obtener precios
             selector_talla.click()
@@ -149,18 +123,30 @@ class ZalandoDataScraper:
                     if "desde" in price:
                         #INICIO => sDq_FX lystZ1 FxZV-M Yb63TQ uMACAo
                         #DESCUENTO => sDq_FX lystZ1 FxZV-M Km7l2y uMACAo
-                        precio_talla = itemList.find_element(By.XPATH, ".//span[contains(@class, 'sDq_FX lystZ1 FxZV-M')]").text
+                        try:
+                            precio_talla = itemList.find_element(By.XPATH, ".//span[contains(@class, 'sDq_FX lystZ1 FxZV-M')]").text
+                        except:
+                            try:
+                                matches = re.findall(r'\d+,\d+', price)
+                                precio_talla = matches[0]
+                            except:
+                                print("ERROR - Fallo en la obtencion de precio, cuando indica desde en el precio main y en el desplegable no tiene precio alguno")
+                                return None
                     else:
                         precio_talla = price
 
                     disponible = True
                 except:
-                    talla_numero = itemList.find_element(By.XPATH, ".//span[contains(@class, 'sDq_FX _2kjxJ6 dgII7d Yb63TQ')]").text
-                    if "desde" in price:
-                        precio_talla = 0
-                    else:
-                        precio_talla = price
-                    disponible = False
+                    try:
+                        talla_numero = itemList.find_element(By.XPATH, ".//span[contains(@class, 'sDq_FX _2kjxJ6 dgII7d Yb63TQ')]").text
+                        if "desde" in price:
+                            precio_talla = 0
+                        else:
+                            precio_talla = price
+                        disponible = False
+                    except:
+                        print("ERROR - Fallo en la obtencion de la talla de no disponible")
+                        return None
                 
                 if precio_talla != 0:
                     precioProductoZalando.talla = talla_numero
@@ -182,9 +168,10 @@ class ZalandoDataScraper:
             return producto_zalando
 
         except Exception as e:
-                    print(e)
-                    self.errorCont += 1
-                    return None
+            print("ERROR - Fallo en el main try")
+            print(e)
+            self.errorCont += 1
+            return None
         
 
     def scrapearZalando(self, url_destino):
@@ -222,7 +209,7 @@ class ZalandoDataScraper:
 
                 contProductos = contProductos + 1
 
-            listUrlProductos_filter = [elemento for elemento in listUrlProductos if any(palabra in elemento for palabra in VECTOR_MARCAS_SELECCIONADAS)]
+            listUrlProductos_filter = [elemento for elemento in listUrlProductos if any(palabra in elemento for palabra in VECTOR_FILTERS_URL)]
 
             return listUrlProductos_filter
 

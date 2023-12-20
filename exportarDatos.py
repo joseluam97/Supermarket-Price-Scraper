@@ -24,6 +24,7 @@ class ExportarDatosZapatos:
 
         cont=1
         for lugar in self.listaLugares:
+            string_con_tallas = ""
             sheet.write(cont, 0, lugar.id)
             sheet.write(cont, 1, lugar.marca)
             sheet.write(cont, 2, lugar.modelo)
@@ -31,6 +32,11 @@ class ExportarDatosZapatos:
             sheet.write(cont, 4, lugar.precio)
             sheet.write(cont, 5, lugar.imagen)
             sheet.write(cont, 6, lugar.link)
+            contCeldas = 7
+            for tallaItem in lugar.preciosTalla:
+                sheet.write(0, contCeldas, 'TALLA')
+                sheet.write(cont, contCeldas, tallaItem.toString())
+                contCeldas = contCeldas + 1
             cont = cont + 1
 
         writeBook.save(self.ruta+self.nombreFichero)

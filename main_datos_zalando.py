@@ -1,11 +1,13 @@
 from exportarDatos import ExportarDatosZapatos
 from threading import Thread
+import threading
 import sys
 import os
 from datetime import *
 import requests
 import json
 from zalando_data_scraper import *
+import math
 #URL_API = "http://localhost:3100/"
 URL_API = "https://api-zalando.netlify.app/.netlify/functions/app/"
 
@@ -29,43 +31,31 @@ def scrapearListProductHilo(lista, hilo, resultados, scraper):
     
     resultados[hilo] = listProductos
 
-def openZalando(idioma, ficheroKw, outputFolder):
-
-    string_marcas_seleccionadas = ".".join(VECTOR_MARCAS_SELECCIONADAS)
-
-    url_zalando = "https://www.zalando.es/calzado-hombre/" + string_marcas_seleccionadas + "/"
-    #url_zalando = "https://www.zalando.es/calzado-hombre/nike.adidas/"
-
-    scraper = ZalandoDataScraper(idioma, outputFolder)
-    scraper.initDriver(url_zalando)
-    pagina_final = scraper.scrappearPaginasZalando(url_zalando)
-    #pagina_final = 1
+def openZalando(pagina_inicio, pagina_final, url_zalando, outputFolder, hilo):
 
     lista_productos = []
 
     #for indice_pagina in range(int(pagina_final)):
-    for indice_pagina in range(1, int(pagina_final)):
+    for indice_pagina in range(pagina_inicio, int(pagina_final)):
         lista_productos = []
 
         url_with_page = url_zalando + "?p="+str(indice_pagina)
 
-        scraper = ZalandoDataScraper(idioma, outputFolder)
+        scraper = ZalandoDataScraper()
         scraper.initDriver(url_with_page)
 
         listUrls = [];
 
         #Obtener URLs
         listUrls = scraper.scrapearZalando(url_with_page)
-        # Modo test split list => listUrls = split_list(listUrls,20)[0]
-        # Modo test unitario => listUrls.append("https://www.zalando.es/adidas-originals-adi-ease-zapatillas-ad112o02f-c11.html")
 
         #Gestion SIN HILOS
         contProductos = 1
         for itemUrls in listUrls:
-            print("------Pagina=> "+str(indice_pagina)+"/"+str(pagina_final)+"------")
+            print("------Hilo=> "+str(hilo)+"------")
             print("------Procesando producto=> "+str(contProductos)+"/"+str(len(listUrls))+"------")
             producto_zalando = scraper.scrapearProductoZalando(itemUrls)
-            print(producto_zalando)
+            #print(producto_zalando)
             contProductos = contProductos + 1
 
             if producto_zalando is None:
@@ -76,7 +66,7 @@ def openZalando(idioma, ficheroKw, outputFolder):
                 lista_productos.append(producto_zalando)
 
         #Publicar en BD
-        post_data_in_database(lista_productos)
+        #post_data_in_database(lista_productos)
 
         #Export Excel
         now = datetime.now()
@@ -86,6 +76,41 @@ def openZalando(idioma, ficheroKw, outputFolder):
         exportar.exportarExcel()
 
         scraper.endDriver()
+
+def mainThreadZalando(outputFolder):
+
+    nHilos = 10
+
+    string_marcas_seleccionadas = ".".join(VECTOR_MARCAS_SELECCIONADAS)
+
+    url_zalando = "https://www.zalando.es/calzado-hombre/" + string_marcas_seleccionadas + "/"
+
+    scraper = ZalandoDataScraper()
+    scraper.initDriver(url_zalando)
+    pagina_final = scraper.scrappearPaginasZalando(url_zalando)
+
+    total_paginas_hilo = math.floor(int(pagina_final) / nHilos)
+    resto_paginas = int(pagina_final) - (total_paginas_hilo * nHilos)
+
+    threads = []
+    for hiloEjecucion in range(nHilos):
+        if hiloEjecucion == nHilos - 1:
+            #Ultima Pagina
+            pagina_inicio = (hiloEjecucion * total_paginas_hilo)
+            pagina_fin = (hiloEjecucion * total_paginas_hilo) + total_paginas_hilo + resto_paginas + 1
+        else:
+            pagina_inicio = (hiloEjecucion * total_paginas_hilo)
+            pagina_fin = (hiloEjecucion * total_paginas_hilo) + total_paginas_hilo
+        thread = threading.Thread(target=openZalando, args=(pagina_inicio, pagina_fin, url_zalando, outputFolder, hiloEjecucion))
+        threads.append(thread)
+        thread.start()
+
+    # Esperar a que todos los hilos terminen
+    for thread in threads:
+        thread.join()
+
+    print("Todos los hilos han terminado.")
+
 
 
 
@@ -184,7 +209,7 @@ if __name__ == "__main__":
     kwLugares = r"C:\Users\josel\OneDrive\Escritorio\ProyectoZalando\texto.txt"
     fichero = r"C:\Users\josel\OneDrive\Escritorio\ProyectoZalando\export\\"
     
-    openZalando(idioma,kwLugares, fichero)
+    mainThreadZalando(fichero)
     '''while True:
         idioma = input('----------\n[1] Introduce the language, (ES o EN): ')
         if(idioma != 'ES' and idioma != 'EN'):
