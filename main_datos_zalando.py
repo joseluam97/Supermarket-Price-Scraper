@@ -1,3 +1,4 @@
+from bd_querys import *
 from exportarDatos import ExportarDatosZapatos
 from threading import Thread
 import threading
@@ -10,6 +11,7 @@ from zalando_data_scraper import *
 import math
 #URL_API = "http://localhost:3100/"
 URL_API = "https://api-zalando.netlify.app/.netlify/functions/app/"
+NUM_HILOS = 16
 
 def split_list(a, n):
     k, m = divmod(len(a), n)
@@ -55,7 +57,6 @@ def openZalando(pagina_inicio, pagina_final, url_zalando, outputFolder, hilo):
             print("------Hilo=> "+str(hilo)+"------")
             print("------Procesando producto=> "+str(contProductos)+"/"+str(len(listUrls))+"------")
             producto_zalando = scraper.scrapearProductoZalando(itemUrls)
-            #print(producto_zalando)
             contProductos = contProductos + 1
 
             if producto_zalando is None:
@@ -79,8 +80,6 @@ def openZalando(pagina_inicio, pagina_final, url_zalando, outputFolder, hilo):
 
 def mainThreadZalando(outputFolder):
 
-    nHilos = 10
-
     string_marcas_seleccionadas = ".".join(VECTOR_MARCAS_SELECCIONADAS)
 
     url_zalando = "https://www.zalando.es/calzado-hombre/" + string_marcas_seleccionadas + "/"
@@ -89,12 +88,12 @@ def mainThreadZalando(outputFolder):
     scraper.initDriver(url_zalando)
     pagina_final = scraper.scrappearPaginasZalando(url_zalando)
 
-    total_paginas_hilo = math.floor(int(pagina_final) / nHilos)
-    resto_paginas = int(pagina_final) - (total_paginas_hilo * nHilos)
+    total_paginas_hilo = math.floor(int(pagina_final) / NUM_HILOS)
+    resto_paginas = int(pagina_final) - (total_paginas_hilo * NUM_HILOS)
 
     threads = []
-    for hiloEjecucion in range(nHilos):
-        if hiloEjecucion == nHilos - 1:
+    for hiloEjecucion in range(NUM_HILOS):
+        if hiloEjecucion == NUM_HILOS - 1:
             #Ultima Pagina
             pagina_inicio = (hiloEjecucion * total_paginas_hilo)
             pagina_fin = (hiloEjecucion * total_paginas_hilo) + total_paginas_hilo + resto_paginas + 1
@@ -111,128 +110,62 @@ def mainThreadZalando(outputFolder):
 
     print("Todos los hilos han terminado.")
 
+def procesar_lista_zapatos_sin_precio(list_zapatos, hiloEjecucion):
+    lista_productos = []
 
+    scraper = ZalandoDataScraper()
+    scraper.initDriver("https://www.zalando.es/")
 
+    scraper.aceptar_cookies()
 
-def post_data_in_database(lista_productos):
-    for itemProducto in lista_productos:
-        idProducto = "ERROR"
-        if not itemProducto.id is None:
-            idProducto = itemProducto.id
-        elemento = {
-            "id_zalando": idProducto,
-            "name": itemProducto.modelo,
-            "brand": itemProducto.marca,
-            "color": itemProducto.color,
-            "imagen": itemProducto.imagen,
-            "link": itemProducto.link,
-        }
+    contProductos = 1
 
-        #POST O GET DEL ZAPATO DEPENDIENDO SI EXISTE O NO
-        dato_zapato = post_or_get_zapato(elemento, itemProducto.id)
-        
-        for itemPrecio in itemProducto.preciosTalla:
-            #REGISTRO DEL PRECIO ACTUAL
-            if not itemPrecio is None:
-                post_price(dato_zapato, itemPrecio)
-            else:
-                print("!ERROR EN PRECIO: ")
-                print(itemPrecio)
-                print()
+    for itemZapato in list_zapatos:
+        print("------Hilo=> "+str(hiloEjecucion)+"------")
+        print("------Procesando producto=> "+str(contProductos)+"/"+str(len(list_zapatos))+"------")
+        producto_zalando = scraper.scrapearProductoZalando(itemZapato['link'])
+        contProductos = contProductos + 1
 
-
-def post_price(dato_zapato, itemPrecio):
-    # URL del endpoint donde realizarás la solicitud POST
-    url = URL_API + "prices"
-
-    #Format price
-    cadena_sin_simbolo = str(itemPrecio.precio).replace("€", "").replace("\xa0", "")
-    price = float(cadena_sin_simbolo.replace(".", "").replace(",", "."))
-
-    #Creacion del json
-    newPrice = {
-        "idProducto": dato_zapato["_id"],
-        "talla": itemPrecio.talla,
-        "price": price,
-        "disponible": itemPrecio.disponibilidad,
-    }
-
-    # Realizar la solicitud POST para comprobar la existencia del elemento
-    response = requests.post(url, json=newPrice)
-
-    # Verificar la respuesta
-    if response.status_code != 200:
-        print("!ERROR en el registro del precio. Codigo de error:" + str(response.status_code))
-        print(dato_zapato)
-        print(itemPrecio)
-        print()
-        
-
-def post_or_get_zapato(elemento, idZalando):
-    # URL del endpoint donde realizarás la solicitud POST
-    url = URL_API + "productos/byIdZalando/" + str(idZalando)
-
-    # Realizar la solicitud POST para comprobar la existencia del elemento
-    response = requests.get(url)
-
-    # Verificar la respuesta
-    if response.status_code == 200:
-        dato_zapato = response.json()
-        #Verificar si existen datos existente
-        
-        if dato_zapato:
-            #Existe el producto ya
-            return dato_zapato
+        if producto_zalando is None:
+            print("!ERROR EN PRODUCTO: ")
+            print(itemZapato)
+            print()
         else:
-            #No existe
-            #Creacion del elemento en BD
-            elemento_created = post_zapato(elemento)
-            return elemento_created
-            
+            lista_productos.append(producto_zalando)
 
-def post_zapato(elemento):
-    # URL del endpoint donde realizarás la solicitud POST
-    url = URL_API + "productos"
+    #Publicar en BD
+    post_data_in_database(lista_productos)
 
-    # Realizar la solicitud POST
-    response = requests.post(url, json=elemento)
+    scraper.endDriver()
 
-    # Verificar la respuesta
-    if response.status_code == 200:
-        #print("Producto creado exitosamente.")
-        return response.json()
-    else:
-        return None
+def procesarProductosSinPrecioActual(outputFolder):
+    list_zapatos = get_zapatos_sin_precio_hoy()
+
+    numero_inicial_elementos = len(list_zapatos)
+
+    list_zapatos_split = split_list(list_zapatos, NUM_HILOS)
+
+    threads = []
+    for hiloEjecucion in range(NUM_HILOS):
+        thread = threading.Thread(target=procesar_lista_zapatos_sin_precio, args=(list_zapatos_split[hiloEjecucion], hiloEjecucion))
+        threads.append(thread)
+        thread.start()
+
+    # Esperar a que todos los hilos terminen
+    for thread in threads:
+        thread.join()
+
+    print("Todos los hilos han terminado.")
+    print()
+
+    print("Inicialmente habia: "+str(numero_inicial_elementos) + " sin precio")
+    list_zapatos_sin_precio_post_operation = get_zapatos_sin_precio_hoy()
+    print("Ahora hay " + str(len(list_zapatos_sin_precio_post_operation)) + " sin precio.")
+
 
 if __name__ == "__main__":
-    idioma = "ES"
-    kwLugares = r"C:\Users\josel\OneDrive\Escritorio\ProyectoZalando\texto.txt"
     fichero = r"C:\Users\josel\OneDrive\Escritorio\ProyectoZalando\export\\"
     
     mainThreadZalando(fichero)
-    '''while True:
-        idioma = input('----------\n[1] Introduce the language, (ES o EN): ')
-        if(idioma != 'ES' and idioma != 'EN'):
-            print("----------\n** Error ** That is not a valid language. Enter a valid language\n")
-            continue
-        else:
-            break
-    
-    while True:
-        fichero = input('----------\n[2] Introduce the path to save the images: ')
-        if(os.path.isdir(fichero) == False):
-            print("----------\n** Error ** That is not a valid folder. Enter a valid folder\n")
-            continue
-        else:
-            caracter = fichero[len(fichero)-1]
-            if(caracter != '/' or caracter != '\\'):
-                fichero = fichero.replace('/','\\')+'\\'
-            break
-    
-    while True:
-        kwLugares = input('----------\n[3] Introduce the path of the keywords txt file: ')
-        if(os.path.isfile(kwLugares) == False):
-            print("----------\n** Error ** That is not a valid txt file. Enter a valid file\n")
-            continue
-        else:
-            break'''
+
+    #procesarProductosSinPrecioActual(fichero)

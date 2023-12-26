@@ -10,8 +10,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import re
-from precio_producto_zalando import PrecioProductoZalando
-from producto_zalando import ProductoZalando
+from models.precio_producto_zalando import PrecioProductoZalando
+from models.producto_zalando import ProductoZalando
 from selenium.common.exceptions import NoSuchElementException
 
 VECTOR_MARCAS_SELECCIONADAS = ["adidas","nike","converse-online-shop","new-balance","puma","vans"]
@@ -63,6 +63,7 @@ class ZalandoDataScraper:
         except:
             print("ERROR - Obtener paginas")
             return 0
+    
 
     def scrapearProductoZalando(self, url_destino):
         try:
@@ -173,6 +174,11 @@ class ZalandoDataScraper:
             self.errorCont += 1
             return None
         
+
+    def aceptar_cookies(self):
+        #Aceptar cookies
+        aceptar_cookies = WebDriverWait(self.driver, 20).until(EC.element_to_be_clickable((By.ID, "uc-btn-accept-banner")))
+        aceptar_cookies.click()
 
     def scrapearZalando(self, url_destino):
         try:
