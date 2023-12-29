@@ -162,10 +162,32 @@ def procesarProductosSinPrecioActual(outputFolder):
     list_zapatos_sin_precio_post_operation = get_zapatos_sin_precio_hoy()
     print("Ahora hay " + str(len(list_zapatos_sin_precio_post_operation)) + " sin precio.")
 
+def procesadoIndividual():
+    URL_SELECCIONADA = "https://www.zalando.es/adidas-originals-adi2000-unisex-zapatillas-focus-olivecrystal-whitewonder-beige-ad115o1kt-n11.html"
+
+    scraper = ZalandoDataScraper()
+    scraper.initDriver("https://www.zalando.es/")
+
+    scraper.aceptar_cookies()
+
+    producto_zalando = scraper.scrapearProductoZalando(URL_SELECCIONADA)
+
+    if producto_zalando is None:
+        print("!ERROR EN PRODUCTO: ")
+    else:
+        lista_productos = []
+        lista_productos.append(producto_zalando)
+        print("Datos Zapato:")
+        print(producto_zalando)
+        print()
+        #Publicar en BD
+        post_data_in_database(lista_productos)
 
 if __name__ == "__main__":
     fichero = r"C:\Users\josel\OneDrive\Escritorio\ProyectoZalando\export\\"
     
-    mainThreadZalando(fichero)
+    #mainThreadZalando(fichero)
 
-    #procesarProductosSinPrecioActual(fichero)
+    procesarProductosSinPrecioActual(fichero)
+
+    #procesadoIndividual()
