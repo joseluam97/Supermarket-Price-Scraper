@@ -1,7 +1,8 @@
 import sys
 import os
 import requests
-URL_API = "https://api-zalando.netlify.app/.netlify/functions/app/"
+URL_API = "http://localhost:3100/"
+#URL_API = "https://api-zalando.netlify.app/.netlify/functions/app/"
 
 def post_data_in_database(lista_productos):
     for itemProducto in lista_productos:
@@ -100,6 +101,21 @@ def get_zapatos_sin_precio_hoy():
 
     # Realizar la solicitud GET
     response = requests.get(url)
+
+    # Verificar la respuesta
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return None
+    
+
+def get_productos_by_marca_y_talla(talla, marca):
+    # URL del endpoint donde realizarás la solicitud POST
+    url = URL_API + "productos/byBrand"
+
+    # Realizar la solicitud GET
+    payload = {'talla': talla, 'brand': marca}
+    response = requests.get(url, params=payload)
 
     # Verificar la respuesta
     if response.status_code == 200:

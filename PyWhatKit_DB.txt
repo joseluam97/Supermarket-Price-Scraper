@@ -1,0 +1,20 @@
+Date: 3/1/2024
+Time: 15:27
+Group ID: F1iyeydcgHtBx8Ot0zqOKC
+Message: mensaje desde python
+--------------------
+Date: 3/1/2024
+Time: 15:27
+Group ID: F1iyeydcgHtBx8Ot0zqOKC
+Message: mensaje desde python
+--------------------
+Date: 3/1/2024
+Time: 16:32
+Group ID: F1iyeydcgHtBx8Ot0zqOKC
+Message: IdZalando: NI112O0Y5-A11Nombre: AIR FORCE 1 '07 - ZapatillasMarca: Nike SportswearColor: white/light smoke greyPrecio Actual: 119.95Precio Medio: 197.12857142857143Oferta: -39.151387781723315Link: https://www.zalando.es/nike-sportswear-air-force-1-07-zapatillas-whitelight-smoke-grey-ni112o0y5-a11.html
+--------------------
+Date: 3/1/2024
+Time: 16:46
+Group ID: F1iyeydcgHtBx8Ot0zqOKC
+Message: https://www.zalando.es/converse-chuck-taylor-all-star-unisex-zapatillas-altas-cave-mossegret-co415n0ua-n11.htmlIdZalando: CO415N0UA-N11Nombre: CHUCK TAYLOR ALL STAR UNISEX - Zapatillas altasMarca: ConverseColor: cave moss/egretPrecio Actual: 48.95Precio Medio: 79.52058823529411Oferta: -38.44361430632096
+--------------------

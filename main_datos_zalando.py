@@ -7,10 +7,11 @@ import os
 from datetime import *
 import requests
 import json
+import pywhatkit
 from zalando_data_scraper import *
 import math
-#URL_API = "http://localhost:3100/"
-URL_API = "https://api-zalando.netlify.app/.netlify/functions/app/"
+URL_API = "http://localhost:3100/"
+#URL_API = "https://api-zalando.netlify.app/.netlify/functions/app/"
 NUM_HILOS = 16
 
 def split_list(a, n):
@@ -70,11 +71,11 @@ def openZalando(pagina_inicio, pagina_final, url_zalando, outputFolder, hilo):
         post_data_in_database(lista_productos)
 
         #Export Excel
-        now = datetime.now()
-        dt_string = now.strftime("%d%m%Y-%H%M%S")
-        name_result_string = "zalando_resultado_pagina_" + str(indice_pagina)
-        exportar = ExportarDatosZapatos(outputFolder+name_result_string+"_"+dt_string+'.xls','', lista_productos)
-        exportar.exportarExcel()
+        #now = datetime.now()
+        #dt_string = now.strftime("%d%m%Y-%H%M%S")
+        #name_result_string = "zalando_resultado_pagina_" + str(indice_pagina)
+        #exportar = ExportarDatosZapatos(outputFolder+name_result_string+"_"+dt_string+'.xls','', lista_productos)
+        #exportar.exportarExcel()
 
         scraper.endDriver()
 
@@ -183,11 +184,62 @@ def procesadoIndividual():
         #Publicar en BD
         post_data_in_database(lista_productos)
 
+def envio_mensajes():
+
+    list_marcas = [
+        {"marca": "adidas Originals", "talla": "40 2/3"},
+        {"marca": "adidas Performance", "talla": "40 2/3"},
+        {"marca": "adidas Sportswear", "talla": "40 2/3"},
+        {"marca": "Nike Performance", "talla": "41"},
+        {"marca": "Nike SB", "talla": "41"},
+        {"marca": "Nike Sportswear", "talla": "41"},
+        {"marca": "Puma", "talla": "41"},
+        {"marca": "New Balance", "talla": "41"},
+        {"marca": "Vans", "talla": "41"},
+        {"marca": "Converse", "talla": "41"},
+    ]
+
+    for itemMarca in list_marcas:
+        list_productos = get_productos_by_marca_y_talla(itemMarca['talla'], itemMarca['marca'])
+
+        for indiceProducto in range(5):
+            if len(list_productos) >= indiceProducto:
+                itemProducto = list_productos[indiceProducto]
+
+                detallesProducto = f"{itemProducto['imagen']}\nNombre: {itemProducto['name']}\nMarca: {itemProducto['brand']}\nColor: {itemProducto['color']}\nPrecio Actual: {round(itemProducto['precio_actual_talla'], 2)} €\nPrecio Medio: {round(itemProducto['precio_medio'], 2)} €\nOferta: {round(itemProducto['porcentaje_cambio'], 2)} %\nLink:{itemProducto['link']}"
+
+                send_message_to_telegram(detallesProducto)
+
+        time.sleep(10)
+
+def send_message_to_telegram(contenido):
+    url = "https://api.telegram.org/bot6491103996:AAHxS8xRf_MveCVOzw-948quImdqpZQ9ZD0/sendMessage"
+
+    payload = json.dumps({
+    "text": contenido,
+    "chat_id": "-4055086397"
+    })
+    headers = {
+    'Content-Type': 'application/json'
+    }
+    response = requests.request("GET", url, headers=headers, data=payload)
+    print(response.text)
+
 if __name__ == "__main__":
     fichero = r"C:\Users\josel\OneDrive\Escritorio\ProyectoZalando\export\\"
-    
-    #mainThreadZalando(fichero)
 
+    #Funcion general
+    mainThreadZalando(fichero)
+
+    time.sleep(30)
+
+    #Funcion para obtener los precios de los productos no comtemplados
     procesarProductosSinPrecioActual(fichero)
 
+    time.sleep(30)
+
+    #Notificacion de los resultados obtenidos
+    envio_mensajes()
+
+    #Proceso individual de un producto - Casos de prueba
     #procesadoIndividual()

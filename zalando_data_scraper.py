@@ -149,7 +149,7 @@ class ZalandoDataScraper:
                         print("ERROR - Fallo en la obtencion de la talla de no disponible")
                         return None
                 
-                if precio_talla != 0:
+                if precio_talla != 0 and disponible == True:
                     precioProductoZalando.talla = talla_numero
                     precioProductoZalando.precio = precio_talla
                     precioProductoZalando.disponibilidad = disponible
