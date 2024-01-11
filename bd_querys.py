@@ -1,8 +1,7 @@
 import sys
 import os
 import requests
-URL_API = "http://localhost:3100/"
-#URL_API = "https://api-zalando.netlify.app/.netlify/functions/app/"
+from dotenv import load_dotenv
 
 def post_data_in_database(lista_productos):
     for itemProducto in lista_productos:
@@ -33,7 +32,7 @@ def post_data_in_database(lista_productos):
 
 def post_price(dato_zapato, itemPrecio):
     # URL del endpoint donde realizarás la solicitud POST
-    url = URL_API + "prices"
+    url = os.getenv('URL_API') + "prices"
 
     #Format price
     cadena_sin_simbolo = str(itemPrecio.precio).replace("€", "").replace("\xa0", "")
@@ -60,7 +59,7 @@ def post_price(dato_zapato, itemPrecio):
 
 def post_or_get_zapato(elemento, idZalando):
     # URL del endpoint donde realizarás la solicitud POST
-    url = URL_API + "productos/byIdZalando/" + str(idZalando)
+    url = os.getenv('URL_API') + "productos/byIdZalando/" + str(idZalando)
 
     # Realizar la solicitud POST para comprobar la existencia del elemento
     response = requests.get(url)
@@ -82,7 +81,7 @@ def post_or_get_zapato(elemento, idZalando):
 
 def post_zapato(elemento):
     # URL del endpoint donde realizarás la solicitud POST
-    url = URL_API + "productos"
+    url = os.getenv('URL_API') + "productos"
 
     # Realizar la solicitud POST
     response = requests.post(url, json=elemento)
@@ -97,7 +96,7 @@ def post_zapato(elemento):
 
 def get_zapatos_sin_precio_hoy():
     # URL del endpoint donde realizarás la solicitud POST
-    url = URL_API + "productos/checkProductHavePrices"
+    url = os.getenv('URL_API') + "productos/checkProductHavePrices"
 
     # Realizar la solicitud GET
     response = requests.get(url)
@@ -111,7 +110,7 @@ def get_zapatos_sin_precio_hoy():
 
 def get_productos_by_marca_y_talla(talla, marca):
     # URL del endpoint donde realizarás la solicitud POST
-    url = URL_API + "productos/byBrand"
+    url = os.getenv('URL_API') + "productos/byBrand"
 
     # Realizar la solicitud GET
     payload = {'talla': talla, 'brand': marca}

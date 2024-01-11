@@ -10,8 +10,7 @@ import json
 import pywhatkit
 from zalando_data_scraper import *
 import math
-URL_API = "http://localhost:3100/"
-#URL_API = "https://api-zalando.netlify.app/.netlify/functions/app/"
+from dotenv import load_dotenv
 NUM_HILOS = 16
 
 def split_list(a, n):
@@ -213,11 +212,11 @@ def envio_mensajes():
         time.sleep(10)
 
 def send_message_to_telegram(contenido):
-    url = "https://api.telegram.org/bot6491103996:AAHxS8xRf_MveCVOzw-948quImdqpZQ9ZD0/sendMessage"
+    url = os.getenv('LINK_TELEGRAM')
 
     payload = json.dumps({
     "text": contenido,
-    "chat_id": "-4055086397"
+    "chat_id": os.getenv('CHAT_ID')
     })
     headers = {
     'Content-Type': 'application/json'
@@ -226,6 +225,9 @@ def send_message_to_telegram(contenido):
     print(response.text)
 
 if __name__ == "__main__":
+
+    load_dotenv()
+
     fichero = r"C:\Users\josel\OneDrive\Escritorio\ProyectoZalando\export\\"
 
     #Funcion general
