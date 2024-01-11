@@ -14,8 +14,8 @@ from models.precio_producto_zalando import PrecioProductoZalando
 from models.producto_zalando import ProductoZalando
 from selenium.common.exceptions import NoSuchElementException
 
-VECTOR_MARCAS_SELECCIONADAS = ["adidas","nike","converse-online-shop","new-balance","puma","vans"]
-VECTOR_FILTERS_URL = ["adidas","nike","converse","new-balance","puma","vans"]
+VECTOR_MARCAS_SELECCIONADAS = ["adidas","nike","converse-online-shop","new-balance","puma","vans", "jordan"]
+VECTOR_FILTERS_URL = ["adidas","nike","converse","new-balance","puma","vans", "jordan"]
 
 class ZalandoDataScraper:
 

@@ -196,6 +196,7 @@ def envio_mensajes():
         {"marca": "New Balance", "talla": "41"},
         {"marca": "Vans", "talla": "41"},
         {"marca": "Converse", "talla": "41"},
+        {"marca": "Jordan", "talla": "40.5"},
     ]
 
     for itemMarca in list_marcas:
