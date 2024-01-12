@@ -3,3 +3,4 @@ __pycache__/*
 imagenes-icono.ico
 test.txt
 export/*
+.env
