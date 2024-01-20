@@ -11,13 +11,13 @@ import pywhatkit
 from zalando_data_scraper import *
 import math
 from dotenv import load_dotenv
-NUM_HILOS = 16
+NUM_HILOS = 20
 
 def split_list(a, n):
     k, m = divmod(len(a), n)
     return list((a[i*k+min(i, m):(i+1)*k+min(i+1, m)] for i in range(n)))
 
-def scrapearListProductHilo(lista, hilo, resultados, scraper):
+def scrapearListProductHilo(lista, hilo, resultados, scraper): 
     listProductos = []
 
     cont=1
@@ -163,7 +163,7 @@ def procesarProductosSinPrecioActual(outputFolder):
     print("Ahora hay " + str(len(list_zapatos_sin_precio_post_operation)) + " sin precio.")
 
 def procesadoIndividual():
-    URL_SELECCIONADA = "https://www.zalando.es/adidas-originals-adi2000-unisex-zapatillas-focus-olivecrystal-whitewonder-beige-ad115o1kt-n11.html"
+    URL_SELECCIONADA = "https://www.zalando.es/jordan-air-jordan-1-zapatillas-altas-beigebrown-joc12n01t-b11.html"
 
     scraper = ZalandoDataScraper()
     scraper.initDriver("https://www.zalando.es/")
