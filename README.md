@@ -23,9 +23,9 @@ El Supermarket Price Scraper es una herramienta de extracción de datos diseñad
 
 3. **Ejecución:**
    ```bash
-   python scraper.py
+   python main_supermarket.py
 
-- El scraper generará un archivo EXCEK con los datos extraídos en el directorio de salida especificado
+- El scraper generará un archivo EXCEL con los datos extraídos en el directorio de salida especificado
 
 4. **Resultados:**
 - Encuentra los resultados detallados en el archivo EXCEL generado, listo para su análisis.

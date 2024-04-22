@@ -3,6 +3,7 @@ from datetime import *
 import requests
 import pandas as pd
 import time
+import numpy as np
 
 URL_CATEGORY_MERCADONA = "https://tienda.mercadona.es/api/categories/"
 URL_PRODUCTS_BY_CATEGORY_MERCADONA = "https://tienda.mercadona.es/api/categories/"
@@ -51,7 +52,7 @@ def get_products_by_category_mercadona(list_categories, ruta):
         
         # Modificar las propiedades oportunas cuando los productos son precios aproximados
         condicion = df_productos['price_instructions.approx_size']
-        df_productos.loc[condicion, 'price_instructions.unit_size'] = "1"
+        df_productos.loc[condicion, 'price_instructions.unit_size'] = 1
         df_productos.loc[condicion, 'price_instructions.unit_price'] = df_productos.loc[condicion, 'price_instructions.bulk_price']
         
         #Add column to category

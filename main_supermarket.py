@@ -31,25 +31,75 @@ def check_favortites_products(df_supermercados):
     
     return df_supermercados
 
+def checkContions(ruta_env, ruta):
+    # Si la carpeta export no existe
+    if not os.path.exists(ruta):
+        print("En la raiz del proyecto debe haber una carpeta llamada 'export'")
+        return False
+    
+    # Si el archivo .env no existe
+    if not os.path.exists(ruta_env):
+        print("En la raiz del proyecto debe encontrarse el archivo .env del proyecto")
+        return False
+    
+    # Si la carpeta export no existe
+    if not os.path.exists(ruta):
+        print("En la raiz del proyecto debe haber una carpeta llamada 'export'")
+        return False
+    
+    # Si la variable de sesion COOKIE_CARREFOUR no existe
+    if os.getenv('COOKIE_CARREFOUR') is None:
+        print("En el archivo .env debe existir una variable llamada 'COOKIE_CARREFOUR' con la cookie correspondiente a Carrefour.")
+        return False
+    
+    if os.getenv('COOKIE_CARREFOUR') == "TU_COOKIE_CARREFOUR":
+        print("Debe cumplimentar en el archivo .env la variable llamada 'COOKIE_CARREFOUR' con la cookie correspondiente a Carrefour. Para mas informacion consulte el archivo 'Guia env.pdf'")
+        return False
+    
+    # Si la variable de sesion COOKIE_DIA no existe
+    if os.getenv('COOKIE_DIA') is None:
+        print("En el archivo .env debe existir una variable llamada 'COOKIE_DIA' con la cookie correspondiente a Dia.")
+        return False
+    
+    if os.getenv('COOKIE_DIA') == "TU_COOKIE_DIA":
+        print("Debe cumplimentar en el archivo .env la variable llamada 'COOKIE_DIA' con la cookie correspondiente a Dia. Para mas informacion consulte el archivo 'Guia env.pdf'")
+        return False
+    
+    return True
+    
 if __name__ == "__main__":
 
     load_dotenv()
     
-    ruta = r"C:\Users\josel\OneDrive\Escritorio\ProyectoSupermercados\export\\"
-
-    # ------------------------------------MERCADONA------------------------------------
-    df_mercadona = gestion_mercadona(ruta)
-    # ------------------------------------CARREFOUR------------------------------------
-    df_carrefour = gestion_carrefour(ruta)
-    # ------------------------------------DIA------------------------------------
-    df_dia = gestion_dia(ruta)
+    ruta_actual = os.getcwd()
+    ruta = ruta_actual + "\export\\"
+    ruta_env = ruta_actual + "\.env"
     
-    # Unir los DataFrames verticalmente
-    #df_supermercados = pd.concat([df_mercadona, df_carrefour, df_dia], ignore_index=True)
-    df_supermercados = df_mercadona
-    
-    #Marcar los productos favoritos
-    df_supermercados = check_favortites_products(df_supermercados)
-    
-    #Export Excel
-    export_excel(df_supermercados, ruta, "products", "Productos")
+    if checkContions(ruta_env, ruta) == True:
+        print("")
+        print("------------------------------------MERCADONA------------------------------------")
+        print("")
+        df_mercadona = gestion_mercadona(ruta)
+        print("")
+        print("------------------------------------CARREFOUR------------------------------------")
+        print("")
+        df_carrefour = gestion_carrefour(ruta)
+        print("")
+        print("------------------------------------DIA------------------------------------")
+        print("")
+        df_dia = gestion_dia(ruta)
+        
+        # Unir los DataFrames verticalmente
+        if(len(df_carrefour.columns) != 0):
+            df_supermercados = pd.concat([df_mercadona, df_carrefour], ignore_index=True)
+        else:
+            df_supermercados = pd.concat([df_mercadona], ignore_index=True)
+            
+        if(len(df_dia.columns) != 0):
+            df_supermercados = pd.concat([df_supermercados, df_dia], ignore_index=True)
+        
+        #Marcar los productos favoritos
+        df_supermercados = check_favortites_products(df_supermercados)
+        
+        #Export Excel
+        export_excel(df_supermercados, ruta, "products", "Productos")

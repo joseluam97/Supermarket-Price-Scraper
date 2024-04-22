@@ -5,6 +5,7 @@ import requests
 from dotenv import load_dotenv
 import pandas as pd
 import time
+import numpy as np
 
 URL_CATEGORY_CARREFOUR = "https://www.carrefour.es/cloud-api/categories-api/v1/categories/menu/"
 URL_PRODUCTS_BY_CATEGORY_CARREFOUR = "https://www.carrefour.es/cloud-api/plp-food-papi/v1"
@@ -108,11 +109,11 @@ def get_products_by_category_carrefour(list_categories, ruta):
                     df_products = pd.concat([df_products, df_products_by_categoria], ignore_index=True)
                     offsetPagina = offsetPagina + 24
                 else:
-                    print("ERROR - Offset sobrepasado")
+                    # print("ERROR - Offset sobrepasado")
                     existeOffset = False
                 
             except:
-                print("ERROR - En la obtencion de productos de la categoria")
+                print("[FIN] - Fin de la obtencion de productos de la categoria")
                 existeOffset = False
     
     #Export Excel
@@ -122,8 +123,12 @@ def get_products_by_category_carrefour(list_categories, ruta):
 
 def get_ids_categorys_carrefour():
 
-    list_category_carrefour_data = requests.get(URL_CATEGORY_CARREFOUR, headers=HEADERS_REQUEST_CARREFOUR)
-    list_category_carrefour = list_category_carrefour_data.json()
+    try:
+        list_category_carrefour_data = requests.get(URL_CATEGORY_CARREFOUR, headers=HEADERS_REQUEST_CARREFOUR)
+        list_category_carrefour = list_category_carrefour_data.json()
+    except:
+        print("ERROR - La cookie proporcionada para el supermercado Carrefour ha caducado")
+        return []
     
     df = pd.json_normalize(list_category_carrefour["menu"], sep="_")
 
@@ -134,7 +139,7 @@ def get_ids_categorys_carrefour():
     df = pd.concat([df, df_categories], axis=1)
     
     # Filtrar por las que comienzan por "/supermercado" y no incluyen "ofertas"
-    filtro = df['childs_url_rel'].str.startswith('/supermercado') & ~df['childs_url_rel'].str.contains('ofertas')
+    filtro = df['childs_url_rel'].str.startswith('/supermercado') & ~df['childs_url_rel'].fillna('').astype(str).str.contains('ofertas')
 
     # Aplicar el filtro al DataFrame
     df = df[filtro]

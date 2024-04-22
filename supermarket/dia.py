@@ -63,7 +63,7 @@ def get_products_by_category_dia(list_categories, ruta):
         #Obtener los productos de la categoria
         list_products_data = requests.get(url, headers=HEADERS_REQUEST_DIA)
         list_products = list_products_data.json()
-        
+            
         try:
             df_productos = pd.json_normalize(list_products["plp_items"], sep="_")
             
@@ -103,8 +103,12 @@ def get_products_by_category_dia(list_categories, ruta):
 
 def get_ids_categorys_dia():
     
-    list_category_dia_data = requests.get(URL_CATEGORY_DIA, headers=HEADERS_REQUEST_DIA)
-    list_category_dia = list_category_dia_data.json()
+    try:
+        list_category_dia_data = requests.get(URL_CATEGORY_DIA, headers=HEADERS_REQUEST_DIA)
+        list_category_dia = list_category_dia_data.json()
+    except:
+        print("ERROR - La cookie proporcionada para el supermercado DIA ha caducado")
+        return []
     
     info = list_category_dia['menu_analytics']
 
