@@ -32,6 +32,3 @@ El Supermarket Price Scraper es una herramienta de extracción de datos diseñad
 
 ## Contribuciones
 ¡Las contribuciones son bienvenidas! Si encuentras algún problema o tienes ideas para mejoras, por favor, abre un issue o envía un pull request.
-
-## Licencia
-Este proyecto está bajo la Licencia MIT - consulta el archivo LICENSE para más detalles.
